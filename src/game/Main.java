@@ -1,6 +1,7 @@
 package game;
 
 import java.util.*;
+
 import static game.InOutUtils.readStringsFromInputStream;
 import static game.ProcessUtils.UTF_8;
 
@@ -11,7 +12,7 @@ public class Main {
 
     public static void main(String[] args) {
         List<String> input = readStringsFromInputStream(System.in, UTF_8);
-        if(!input.isEmpty()){
+        if (!input.isEmpty()) {
             Round round = new Round(input);
             printMovingGroups(makeMove(round));
         }
@@ -34,68 +35,47 @@ public class Main {
 
         List<Planet> listNoManPlanet = round.getNoMansPlanets();
 
+
         List<Planet> listAllPlanets = round.getPlanets();
 
-        if(myId == 0) {
-        listMyPlanet.stream().forEach(planet ->
-                {
-                    int count = (planet.getPopulation() - 1) / 3;
-                    int min = 12;
-                    int mini = -1;
-                    int j = 0;
-                    List<Integer> array = new ArrayList<>();
-                    while(j < 3) {
-                        min = 12;
-                        for (int i = 0; i < 10; i++) {
-                            if ((matrix[i][planet.getId()] <= min) && (matrix[i][planet.getId()] != 0)) {
-                                min = matrix[i][planet.getId()];
-                                mini = i;
-                            }
-                        }
-                        array.add(mini);
-                        matrix[mini][planet.getId()] = 12;
-                        j++;
-                    }
-                    j--;
-                    while(j >= 0) {
-                        movingGroups.add(new MovingGroup(planet.getId(), array.get(j), count));
-                        j--;
-                    }
-                }
-                );}
+        listMyPlanet.stream().forEach(planet -> {
+            int count = (planet.getPopulation() - 1) / 3;
+            int j = 0;
+            List<Integer> array = new ArrayList<>();
 
-        if(myId == 1) {
-            listMyPlanet.stream().forEach(planet ->
-                    {
-                        int count = (planet.getPopulation() - 1) / 3;
-                        int min = 12;
-                        int mini = -1;
-                        int j = 0;
-                        List<Integer> array = new ArrayList<>();
-                        while(j < 3) {
-                            min = 12;
-                            for (int i = 0; i < 10; i++) {
-                                if ((matrix[i][planet.getId()] < min) && (matrix[i][planet.getId()] != 0)) {
-                                    min = matrix[i][planet.getId()];
-                                    mini = i;
-                                }
+            List<Planet> attackPlanets = new ArrayList<>();
+            attackPlanets.addAll(listNoManPlanet);
+            attackPlanets.addAll(listNotMyPlanet);
+
+            while (j < 3) {
+                final int[] min = {20};
+                final int[] minj = {-1};
+                final int[] index = {0};
+                final int[] i = {0};
+                attackPlanets.stream().forEach(attackPl -> {
+                    if(matrix[planet.getId()][attackPl.getId()] < min[0]) {
+                                min[0] = matrix[planet.getId()][attackPl.getId()];
+                                minj[0] = attackPl.getId();
+                                index[0] = i[0];
                             }
-                            array.add(mini);
-                            matrix[mini][planet.getId()] = 12;
-                            j++;
-                        }
-                        j--;
-                        while(j >= 0) {
-                            movingGroups.add(new MovingGroup(planet.getId(), array.get(j), count));
-                            j--;
-                        }
-                    }
-            );}
+                    i[0]++;
+                });
+                array.add(minj[0]);
+                if(attackPlanets.size() > 0) attackPlanets.remove(index[0]);
+                j++;
+            }
+
+            j--;
+
+            while (j >= 0) {
+                movingGroups.add(new MovingGroup(planet.getId(), array.get(j), count));
+                j--;
+            }
+        });
 
         return movingGroups;
 
     }
-
 
 
     private static void printMovingGroups(List<MovingGroup> moves) {
